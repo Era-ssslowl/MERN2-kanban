@@ -1,0 +1,14 @@
+import { PubSub } from 'graphql-subscriptions';
+
+export const pubsub = new PubSub();
+
+export const EVENTS = {
+  CARD_CREATED: 'CARD_CREATED',
+  CARD_UPDATED: 'CARD_UPDATED',
+  CARD_MOVED: 'CARD_MOVED',
+  CARD_DELETED: 'CARD_DELETED',
+  COMMENT_ADDED: 'COMMENT_ADDED',
+  COMMENT_UPDATED: 'COMMENT_UPDATED',
+  COMMENT_DELETED: 'COMMENT_DELETED',
+  BOARD_UPDATED: 'BOARD_UPDATED',
+};

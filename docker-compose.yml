@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongo:
+    image: mongo:7.0
+    container_name: taskflow-mongo
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: taskflow
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/taskflow --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - taskflow-network
+
+  # Backend API
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: taskflow-api
+    restart: unless-stopped
+    ports:
+      - '4000:4000'
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      HOST: 0.0.0.0
+      MONGO_URI: mongodb://mongo:27017/taskflow
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_EXPIRES_IN: 7d
+      CLIENT_URL: http://localhost:3000
+      GRAPHQL_PATH: /graphql
+      GRAPHQL_SUBSCRIPTIONS_PATH: /graphql
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - taskflow-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+      start_period: 40s
+
+  # Frontend Client
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: taskflow-client
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NEXT_PUBLIC_GRAPHQL_HTTP: http://localhost:4000/graphql
+      NEXT_PUBLIC_GRAPHQL_WS: ws://localhost:4000/graphql
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - taskflow-network
+
+  # Mongo Express (Optional - for database management)
+  mongo-express:
+    image: mongo-express:latest
+    container_name: taskflow-mongo-express
+    restart: unless-stopped
+    ports:
+      - '8081:8081'
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017/
+      ME_CONFIG_BASICAUTH: false
+    depends_on:
+      - mongo
+    networks:
+      - taskflow-network
+
+networks:
+  taskflow-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local
