@@ -4,6 +4,7 @@ export interface IBoard extends Document {
   title: string;
   description?: string;
   owner: mongoose.Types.ObjectId;
+  admins: mongoose.Types.ObjectId[];
   members: mongoose.Types.ObjectId[];
   backgroundColor: string;
   isPrivate: boolean;
@@ -32,6 +33,12 @@ const boardSchema = new Schema<IBoard>(
       ref: 'User',
       required: [true, 'Board owner is required'],
     },
+    admins: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     members: [
       {
         type: Schema.Types.ObjectId,
@@ -65,6 +72,7 @@ const boardSchema = new Schema<IBoard>(
 
 // Indexes
 boardSchema.index({ owner: 1, createdAt: -1 });
+boardSchema.index({ admins: 1 });
 boardSchema.index({ members: 1 });
 boardSchema.index({ isDeleted: 1 });
 
@@ -75,10 +83,15 @@ boardSchema.virtual('lists', {
   foreignField: 'board',
 });
 
-// Add owner to members automatically
+// Add owner to admins and members automatically
 boardSchema.pre('save', function (next) {
-  if (this.isNew && !this.members.includes(this.owner)) {
-    this.members.push(this.owner);
+  if (this.isNew) {
+    if (!this.admins.includes(this.owner)) {
+      this.admins.push(this.owner);
+    }
+    if (!this.members.includes(this.owner)) {
+      this.members.push(this.owner);
+    }
   }
   next();
 });

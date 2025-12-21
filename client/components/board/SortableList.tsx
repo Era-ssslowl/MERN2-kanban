@@ -32,10 +32,9 @@ export function SortableList({ list, boardId, refetch }: SortableListProps) {
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
       className="sortable-list"
     >
-      <BoardList list={list} boardId={boardId} refetch={refetch} />
+      <BoardList list={list} boardId={boardId} refetch={refetch} dragHandleListeners={listeners} />
     </div>
   );
 }

@@ -9,15 +9,31 @@ export interface User {
   updatedAt: string;
 }
 
+export interface BoardStatistics {
+  totalLists: number;
+  totalCards: number;
+  completedCards: number;
+  pendingCards: number;
+  archivedCards: number;
+  totalMembers: number;
+  cardsByPriority: {
+    low: number;
+    medium: number;
+    high: number;
+  };
+}
+
 export interface Board {
   id: string;
   title: string;
   description?: string;
   owner: User;
+  admins: User[];
   members: User[];
   backgroundColor: string;
   isPrivate: boolean;
   lists?: List[];
+  statistics?: BoardStatistics;
   createdAt: string;
   updatedAt: string;
 }

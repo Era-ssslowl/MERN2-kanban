@@ -41,6 +41,11 @@ export const BOARDS_QUERY = gql`
         name
         email
       }
+      admins {
+        id
+        name
+        email
+      }
       members {
         id
         name
@@ -65,11 +70,30 @@ export const BOARD_QUERY = gql`
         name
         email
       }
+      admins {
+        id
+        name
+        email
+        avatar
+      }
       members {
         id
         name
         email
         avatar
+      }
+      statistics {
+        totalLists
+        totalCards
+        completedCards
+        pendingCards
+        archivedCards
+        totalMembers
+        cardsByPriority {
+          low
+          medium
+          high
+        }
       }
       lists {
         id
@@ -84,6 +108,7 @@ export const BOARD_QUERY = gql`
           priority
           labels
           dueDate
+          isArchived
           assignees {
             id
             name

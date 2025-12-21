@@ -1,10 +1,11 @@
-import { List, Card } from '../models';
+import { List, Card, Board } from '../models';
 import { requireAuth, checkBoardAccess } from '../middleware/auth';
 import {
   createNotFoundError,
   createAuthorizationError,
 } from '../utils/errors';
 import { Context } from '../middleware/auth';
+import { checkBoardAdmin } from '../utils/permissions';
 
 export interface CreateListInput {
   title: string;
@@ -49,11 +50,14 @@ export const listResolvers = {
 
       const { boardId, title, position } = input;
 
-      // Check board access
-      const hasAccess = await checkBoardAccess(boardId, context.userId!);
-      if (!hasAccess) {
-        throw createAuthorizationError('You do not have access to this board');
+      // Get board and check admin access
+      const board = await Board.findById(boardId);
+      if (!board) {
+        throw createNotFoundError('Board');
       }
+
+      // Only admins can create lists
+      checkBoardAdmin(board, context.userId!);
 
       // Get max position if not provided
       let listPosition = position;
@@ -82,20 +86,14 @@ export const listResolvers = {
     ) => {
       requireAuth(context);
 
-      const list = await List.findById(id);
+      const list = await List.findById(id).populate('board');
 
       if (!list) {
         throw createNotFoundError('List');
       }
 
-      // Check board access
-      const hasAccess = await checkBoardAccess(
-        list.board.toString(),
-        context.userId!
-      );
-      if (!hasAccess) {
-        throw createAuthorizationError('You do not have access to this board');
-      }
+      // Only admins can update lists
+      checkBoardAdmin(list.board, context.userId!);
 
       Object.assign(list, input);
       await list.save();
@@ -138,20 +136,14 @@ export const listResolvers = {
     deleteList: async (_: unknown, { id }: { id: string }, context: Context) => {
       requireAuth(context);
 
-      const list = await List.findById(id);
+      const list = await List.findById(id).populate('board');
 
       if (!list) {
         throw createNotFoundError('List');
       }
 
-      // Check board access
-      const hasAccess = await checkBoardAccess(
-        list.board.toString(),
-        context.userId!
-      );
-      if (!hasAccess) {
-        throw createAuthorizationError('You do not have access to this board');
-      }
+      // Only admins can delete lists
+      checkBoardAdmin(list.board, context.userId!);
 
       // Soft delete
       list.isDeleted = true;

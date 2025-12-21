@@ -210,3 +210,65 @@ export const UPDATE_USER_ROLE_MUTATION = gql`
     }
   }
 `;
+
+export const ADD_BOARD_MEMBER_MUTATION = gql`
+  mutation AddBoardMember($boardId: ID!, $userId: ID!) {
+    addBoardMember(boardId: $boardId, userId: $userId) {
+      id
+      members {
+        id
+        name
+        email
+        avatar
+      }
+    }
+  }
+`;
+
+export const REMOVE_BOARD_MEMBER_MUTATION = gql`
+  mutation RemoveBoardMember($boardId: ID!, $userId: ID!) {
+    removeBoardMember(boardId: $boardId, userId: $userId) {
+      id
+      members {
+        id
+        name
+        email
+        avatar
+      }
+      admins {
+        id
+        name
+        email
+        avatar
+      }
+    }
+  }
+`;
+
+export const ADD_BOARD_ADMIN_MUTATION = gql`
+  mutation AddBoardAdmin($boardId: ID!, $userId: ID!) {
+    addBoardAdmin(boardId: $boardId, userId: $userId) {
+      id
+      admins {
+        id
+        name
+        email
+        avatar
+      }
+    }
+  }
+`;
+
+export const REMOVE_BOARD_ADMIN_MUTATION = gql`
+  mutation RemoveBoardAdmin($boardId: ID!, $userId: ID!) {
+    removeBoardAdmin(boardId: $boardId, userId: $userId) {
+      id
+      admins {
+        id
+        name
+        email
+        avatar
+      }
+    }
+  }
+`;

@@ -28,7 +28,7 @@ RUN npm install --only=production --legacy-peer-deps
 
 # Copy built files from builder
 COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
+# COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.mjs ./
 
 # Expose port

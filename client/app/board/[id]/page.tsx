@@ -15,7 +15,7 @@ import {
   DragEndEvent,
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
-import { BOARD_QUERY } from '@/lib/graphql/queries';
+import { BOARD_QUERY, ME_QUERY } from '@/lib/graphql/queries';
 import {
   CARD_CREATED_SUBSCRIPTION,
   CARD_UPDATED_SUBSCRIPTION,
@@ -25,6 +25,8 @@ import { MOVE_CARD_MUTATION, MOVE_LIST_MUTATION } from '@/lib/graphql/mutations'
 import { Board, List as ListType, Card } from '@/types';
 import { SortableList } from '@/components/board/SortableList';
 import { CreateListButton } from '@/components/board/CreateListButton';
+import { BoardMembersModal } from '@/components/board/BoardMembersModal';
+import { BoardStatistics } from '@/components/board/BoardStatistics';
 
 export default function BoardPage() {
   const params = useParams();
@@ -35,6 +37,11 @@ export default function BoardPage() {
     variables: { id: boardId },
     skip: !boardId,
   });
+
+  const { data: meData } = useQuery(ME_QUERY);
+
+  const [showMembersModal, setShowMembersModal] = useState(false);
+  const [showStatistics, setShowStatistics] = useState(false);
 
   // Subscribe to card updates
   useSubscription(CARD_CREATED_SUBSCRIPTION, {
@@ -178,21 +185,40 @@ export default function BoardPage() {
             </Link>
             <h1 className="text-2xl font-bold text-white">{board.title}</h1>
           </div>
-          <div className="flex items-center gap-2">
-            {board.members.slice(0, 3).map((member) => (
-              <div
-                key={member.id}
-                className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-medium"
-                title={member.name}
-              >
-                {member.name.charAt(0).toUpperCase()}
-              </div>
-            ))}
-            {board.members.length > 3 && (
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-xs">
-                +{board.members.length - 3}
-              </div>
-            )}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowStatistics(true)}
+              className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-md text-sm font-medium transition-colors"
+              title="View Statistics"
+            >
+              📊 Stats
+            </button>
+            <button
+              onClick={() => setShowMembersModal(true)}
+              className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+              title="Manage Members"
+            >
+              <span>👥 Members</span>
+              <span className="bg-white/30 px-2 py-0.5 rounded-full text-xs">
+                {board.members.length}
+              </span>
+            </button>
+            <div className="flex items-center gap-2">
+              {board.members.slice(0, 3).map((member) => (
+                <div
+                  key={member.id}
+                  className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-medium"
+                  title={member.name}
+                >
+                  {member.name.charAt(0).toUpperCase()}
+                </div>
+              ))}
+              {board.members.length > 3 && (
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-xs">
+                  +{board.members.length - 3}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -227,6 +253,23 @@ export default function BoardPage() {
           </DragOverlay>
         </DndContext>
       </main>
+
+      {/* Modals */}
+      {showMembersModal && meData?.me && (
+        <BoardMembersModal
+          board={board}
+          currentUser={meData.me}
+          onClose={() => setShowMembersModal(false)}
+          refetch={refetch}
+        />
+      )}
+
+      {showStatistics && board.statistics && (
+        <BoardStatistics
+          statistics={board.statistics}
+          onClose={() => setShowStatistics(false)}
+        />
+      )}
     </div>
   );
 }

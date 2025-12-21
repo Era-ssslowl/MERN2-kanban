@@ -17,12 +17,30 @@ export const typeDefs = `#graphql
     title: String!
     description: String
     owner: User!
+    admins: [User!]!
     members: [User!]!
     backgroundColor: String!
     isPrivate: Boolean!
     lists: [List!]
+    statistics: BoardStatistics
     createdAt: DateTime!
     updatedAt: DateTime!
+  }
+
+  type BoardStatistics {
+    totalLists: Int!
+    totalCards: Int!
+    completedCards: Int!
+    pendingCards: Int!
+    archivedCards: Int!
+    totalMembers: Int!
+    cardsByPriority: CardsByPriority!
+  }
+
+  type CardsByPriority {
+    low: Int!
+    medium: Int!
+    high: Int!
   }
 
   type List {
@@ -81,6 +99,7 @@ export const typeDefs = `#graphql
 
     boards: [Board!]!
     board(id: ID!): Board
+    boardStatistics(boardId: ID!): BoardStatistics
 
     lists(boardId: ID!): [List!]!
 
@@ -175,6 +194,8 @@ export const typeDefs = `#graphql
     deleteBoard(id: ID!): Boolean!
     addBoardMember(boardId: ID!, userId: ID!): Board!
     removeBoardMember(boardId: ID!, userId: ID!): Board!
+    addBoardAdmin(boardId: ID!, userId: ID!): Board!
+    removeBoardAdmin(boardId: ID!, userId: ID!): Board!
 
     createList(input: CreateListInput!): List!
     updateList(id: ID!, input: UpdateListInput!): List!

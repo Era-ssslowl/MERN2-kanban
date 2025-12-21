@@ -11,9 +11,10 @@ interface BoardListProps {
   list: ListType;
   boardId: string;
   refetch: () => void;
+  dragHandleListeners?: any;
 }
 
-export function BoardList({ list, boardId, refetch }: BoardListProps) {
+export function BoardList({ list, boardId, refetch, dragHandleListeners }: BoardListProps) {
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState('');
 
@@ -44,7 +45,10 @@ export function BoardList({ list, boardId, refetch }: BoardListProps) {
 
   return (
     <div className="flex-shrink-0 w-72 bg-gray-100 rounded-lg p-3">
-      <div className="flex justify-between items-center mb-3">
+      <div
+        className="flex justify-between items-center mb-3 cursor-grab active:cursor-grabbing"
+        {...dragHandleListeners}
+      >
         <h3 className="font-semibold text-gray-900">{list.title}</h3>
         <span className="text-xs text-gray-500">{cards.length}</span>
       </div>
