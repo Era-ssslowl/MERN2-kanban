@@ -210,3 +210,41 @@ export const UPDATE_USER_ROLE_MUTATION = gql`
     }
   }
 `;
+
+export const UPDATE_PROFILE_MUTATION = gql`
+  mutation UpdateProfile($input: UpdateProfileInput!) {
+    updateProfile(input: $input) {
+      id
+      name
+      avatar
+      bio
+    }
+  }
+`;
+
+export const CHANGE_PASSWORD_MUTATION = gql`
+  mutation ChangePassword($input: ChangePasswordInput!) {
+    changePassword(input: $input)
+  }
+`;
+
+export const MARK_NOTIFICATION_AS_READ_MUTATION = gql`
+  mutation MarkNotificationAsRead($notificationId: ID!) {
+    markNotificationAsRead(notificationId: $notificationId) {
+      id
+      isRead
+    }
+  }
+`;
+
+export const MARK_ALL_NOTIFICATIONS_AS_READ_MUTATION = gql`
+  mutation MarkAllNotificationsAsRead {
+    markAllNotificationsAsRead
+  }
+`;
+
+export const DELETE_NOTIFICATION_MUTATION = gql`
+  mutation DeleteNotification($notificationId: ID!) {
+    deleteNotification(notificationId: $notificationId)
+  }
+`;

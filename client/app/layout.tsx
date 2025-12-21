@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { ApolloProvider } from '@/lib/apollo/ApolloProvider';
+import { LayoutWrapper } from '@/components/layout/LayoutWrapper';
 
 export const metadata: Metadata = {
   title: 'TaskFlow - Manage your projects',
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ApolloProvider>{children}</ApolloProvider>
+        <ApolloProvider>
+          <LayoutWrapper>{children}</LayoutWrapper>
+        </ApolloProvider>
       </body>
     </html>
   );

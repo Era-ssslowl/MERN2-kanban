@@ -2,17 +2,12 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { BOARDS_QUERY } from '@/lib/graphql/queries';
 import { CREATE_BOARD_MUTATION } from '@/lib/graphql/mutations';
-import { useAuthStore } from '@/store/authStore';
 import { Board } from '@/types';
-import { AdminBadge } from '@/components/ui/AdminBadge';
 
 export default function BoardsPage() {
-  const router = useRouter();
-  const { user, logout } = useAuthStore();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newBoardTitle, setNewBoardTitle] = useState('');
   const [newBoardDescription, setNewBoardDescription] = useState('');
@@ -41,11 +36,6 @@ export default function BoardsPage() {
     });
   };
 
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -58,21 +48,6 @@ export default function BoardsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">TaskFlow</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">
-              Welcome, {user?.name}
-              <AdminBadge isAdmin={user?.role === 'admin'} />
-            </span>
-            <button onClick={handleLogout} className="btn btn-secondary text-sm">
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900">My Boards</h2>

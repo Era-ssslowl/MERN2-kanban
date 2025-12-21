@@ -6,6 +6,9 @@ import { listResolvers } from './list.resolvers';
 import { cardResolvers } from './card.resolvers';
 import { commentResolvers } from './comment.resolvers';
 import { subscriptionResolvers } from './subscription.resolvers';
+import { analyticsResolvers } from './analytics.resolvers';
+import { notificationResolvers } from './notification.resolvers';
+import { searchResolvers } from './search.resolvers';
 
 export const resolvers = {
   DateTime: GraphQLDateTime,
@@ -16,18 +19,24 @@ export const resolvers = {
     ...listResolvers.Query,
     ...cardResolvers.Query,
     ...commentResolvers.Query,
+    ...analyticsResolvers.Query,
+    ...notificationResolvers.Query,
+    ...searchResolvers.Query,
   },
 
   Mutation: {
     ...authResolvers.Mutation,
+    ...userResolvers.Mutation,
     ...boardResolvers.Mutation,
     ...listResolvers.Mutation,
     ...cardResolvers.Mutation,
     ...commentResolvers.Mutation,
+    ...notificationResolvers.Mutation,
   },
 
   Subscription: {
     ...subscriptionResolvers.Subscription,
+    ...notificationResolvers.Subscription,
   },
 
   Board: {

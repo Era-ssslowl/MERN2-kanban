@@ -63,10 +63,83 @@ export const typeDefs = `#graphql
     updatedAt: DateTime!
   }
 
+  type Notification {
+    id: ID!
+    recipient: User!
+    sender: User
+    type: NotificationType!
+    title: String!
+    message: String!
+    entityType: String
+    entityId: ID
+    isRead: Boolean!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
+  type ActivityLog {
+    id: ID!
+    user: User!
+    action: String!
+    entityType: String!
+    entityId: ID
+    details: String
+    createdAt: DateTime!
+  }
+
+  type Analytics {
+    totalUsers: Int!
+    totalBoards: Int!
+    totalCards: Int!
+    totalComments: Int!
+    activeUsersToday: Int!
+    activeUsersThisWeek: Int!
+    boardsCreatedThisMonth: Int!
+    cardsCreatedThisMonth: Int!
+    userGrowth: [UserGrowth!]!
+    topActiveUsers: [UserStats!]!
+    boardStats: BoardStats!
+  }
+
+  type UserGrowth {
+    date: String!
+    count: Int!
+  }
+
+  type UserStats {
+    id: ID!
+    name: String!
+    email: String!
+    boardCount: Int!
+    cardCount: Int!
+    commentCount: Int!
+  }
+
+  type BoardStats {
+    totalPublic: Int!
+    totalPrivate: Int!
+    averageCardsPerBoard: Float!
+    averageMembersPerBoard: Float!
+  }
+
+  type SearchResults {
+    boards: [Board!]!
+    cards: [Card!]!
+  }
+
   enum Priority {
     LOW
     MEDIUM
     HIGH
+  }
+
+  enum NotificationType {
+    COMMENT
+    ASSIGNMENT
+    MENTION
+    BOARD_UPDATE
+    CARD_UPDATE
+    DUE_DATE
   }
 
   type AuthPayload {
@@ -88,6 +161,16 @@ export const typeDefs = `#graphql
     cards(listId: ID!): [Card!]!
 
     comments(cardId: ID!): [Comment!]!
+
+    notifications: [Notification!]!
+    unreadNotificationsCount: Int!
+
+    activityLogs(limit: Int, offset: Int): [ActivityLog!]!
+    userActivityLogs(userId: ID!, limit: Int): [ActivityLog!]!
+
+    analytics: Analytics!
+
+    search(query: String!): SearchResults!
   }
 
   input RegisterInput {
@@ -166,9 +249,23 @@ export const typeDefs = `#graphql
     content: String!
   }
 
+  input UpdateProfileInput {
+    name: String
+    bio: String
+    avatar: String
+  }
+
+  input ChangePasswordInput {
+    currentPassword: String!
+    newPassword: String!
+  }
+
   type Mutation {
     register(input: RegisterInput!): AuthPayload!
     login(input: LoginInput!): AuthPayload!
+
+    updateProfile(input: UpdateProfileInput!): User!
+    changePassword(input: ChangePasswordInput!): Boolean!
 
     createBoard(input: CreateBoardInput!): Board!
     updateBoard(id: ID!, input: UpdateBoardInput!): Board!
@@ -192,6 +289,10 @@ export const typeDefs = `#graphql
     updateComment(id: ID!, input: UpdateCommentInput!): Comment!
     deleteComment(id: ID!): Boolean!
 
+    markNotificationAsRead(notificationId: ID!): Notification!
+    markAllNotificationsAsRead: Boolean!
+    deleteNotification(notificationId: ID!): Boolean!
+
     updateUserRole(userId: ID!, role: String!): User!
   }
 
@@ -206,5 +307,7 @@ export const typeDefs = `#graphql
     commentDeleted(cardId: ID!): ID!
 
     boardUpdated(boardId: ID!): Board!
+
+    notificationReceived: Notification!
   }
 `;

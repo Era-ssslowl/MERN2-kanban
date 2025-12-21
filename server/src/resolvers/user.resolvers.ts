@@ -31,6 +31,58 @@ export const userResolvers = {
   },
 
   Mutation: {
+    updateProfile: async (
+      _: unknown,
+      { input }: { input: { name?: string; bio?: string; avatar?: string } },
+      context: Context
+    ) => {
+      requireAuth(context);
+
+      const user = await User.findById(context.user!.id);
+
+      if (!user) {
+        throw createNotFoundError('User');
+      }
+
+      if (input.name !== undefined) user.name = input.name;
+      if (input.bio !== undefined) user.bio = input.bio;
+      if (input.avatar !== undefined) user.avatar = input.avatar;
+
+      await user.save();
+
+      return user;
+    },
+
+    changePassword: async (
+      _: unknown,
+      { input }: { input: { currentPassword: string; newPassword: string } },
+      context: Context
+    ) => {
+      requireAuth(context);
+
+      const user = await User.findById(context.user!.id).select('+password');
+
+      if (!user) {
+        throw createNotFoundError('User');
+      }
+
+      // Verify current password
+      const isMatch = await user.comparePassword(input.currentPassword);
+      if (!isMatch) {
+        throw new Error('Current password is incorrect');
+      }
+
+      // Validate new password
+      if (input.newPassword.length < 6) {
+        throw new Error('New password must be at least 6 characters');
+      }
+
+      user.password = input.newPassword;
+      await user.save();
+
+      return true;
+    },
+
     updateUserRole: async (
       _: unknown,
       { userId, role }: { userId: string; role: string },

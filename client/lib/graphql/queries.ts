@@ -154,3 +154,103 @@ export const COMMENTS_QUERY = gql`
     }
   }
 `;
+
+export const NOTIFICATIONS_QUERY = gql`
+  query GetNotifications {
+    notifications {
+      id
+      type
+      title
+      message
+      isRead
+      createdAt
+      sender {
+        id
+        name
+        avatar
+      }
+      entityType
+      entityId
+    }
+    unreadNotificationsCount
+  }
+`;
+
+export const ANALYTICS_QUERY = gql`
+  query GetAnalytics {
+    analytics {
+      totalUsers
+      totalBoards
+      totalCards
+      totalComments
+      activeUsersToday
+      activeUsersThisWeek
+      boardsCreatedThisMonth
+      cardsCreatedThisMonth
+      userGrowth {
+        date
+        count
+      }
+      topActiveUsers {
+        id
+        name
+        email
+        boardCount
+        cardCount
+        commentCount
+      }
+      boardStats {
+        totalPublic
+        totalPrivate
+        averageCardsPerBoard
+        averageMembersPerBoard
+      }
+    }
+  }
+`;
+
+export const ACTIVITY_LOGS_QUERY = gql`
+  query GetActivityLogs($limit: Int, $offset: Int) {
+    activityLogs(limit: $limit, offset: $offset) {
+      id
+      user {
+        id
+        name
+        email
+      }
+      action
+      entityType
+      entityId
+      details
+      createdAt
+    }
+  }
+`;
+
+export const SEARCH_QUERY = gql`
+  query Search($query: String!) {
+    search(query: $query) {
+      boards {
+        id
+        title
+        description
+        backgroundColor
+      }
+      cards {
+        id
+        title
+        description
+        labels
+        priority
+        list {
+          id
+          title
+          board {
+            id
+            title
+          }
+        }
+      }
+    }
+  }
+`;
