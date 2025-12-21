@@ -272,3 +272,31 @@ export const REMOVE_BOARD_ADMIN_MUTATION = gql`
     }
   }
 `;
+
+export const ASSIGN_CARD_MUTATION = gql`
+  mutation AssignCard($cardId: ID!, $userId: ID!) {
+    assignCard(cardId: $cardId, userId: $userId) {
+      id
+      assignees {
+        id
+        name
+        email
+        avatar
+      }
+    }
+  }
+`;
+
+export const UNASSIGN_CARD_MUTATION = gql`
+  mutation UnassignCard($cardId: ID!, $userId: ID!) {
+    unassignCard(cardId: $cardId, userId: $userId) {
+      id
+      assignees {
+        id
+        name
+        email
+        avatar
+      }
+    }
+  }
+`;

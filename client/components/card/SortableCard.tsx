@@ -7,9 +7,10 @@ import { Card } from '@/types';
 
 interface SortableCardProps {
   card: Card;
+  onClick?: () => void;
 }
 
-export function SortableCard({ card }: SortableCardProps) {
+export function SortableCard({ card, onClick }: SortableCardProps) {
   const {
     attributes,
     listeners,
@@ -30,10 +31,9 @@ export function SortableCard({ card }: SortableCardProps) {
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
       className="sortable-card"
     >
-      <CardItem card={card} />
+      <CardItem card={card} onClick={onClick} dragHandleProps={listeners} />
     </div>
   );
 }

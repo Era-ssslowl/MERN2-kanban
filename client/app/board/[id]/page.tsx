@@ -27,6 +27,7 @@ import { SortableList } from '@/components/board/SortableList';
 import { CreateListButton } from '@/components/board/CreateListButton';
 import { BoardMembersModal } from '@/components/board/BoardMembersModal';
 import { BoardStatistics } from '@/components/board/BoardStatistics';
+import { BoardSettingsModal } from '@/components/board/BoardSettingsModal';
 
 export default function BoardPage() {
   const params = useParams();
@@ -42,6 +43,7 @@ export default function BoardPage() {
 
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Subscribe to card updates
   useSubscription(CARD_CREATED_SUBSCRIPTION, {
@@ -91,6 +93,8 @@ export default function BoardPage() {
 
   const board: Board = data.board;
   const lists: ListType[] = board.lists || [];
+  const isOwner = meData?.me && board.owner.id === meData.me.id;
+  const isAdmin = meData?.me && board.admins.some((admin) => admin.id === meData.me.id);
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -203,6 +207,13 @@ export default function BoardPage() {
                 {board.members.length}
               </span>
             </button>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-md text-sm font-medium transition-colors"
+              title="Board Settings"
+            >
+              ⚙️ Settings
+            </button>
             <div className="flex items-center gap-2">
               {board.members.slice(0, 3).map((member) => (
                 <div
@@ -239,7 +250,16 @@ export default function BoardPage() {
                 .filter((list) => !list.isArchived)
                 .sort((a, b) => a.position - b.position)
                 .map((list) => (
-                  <SortableList key={list.id} list={list} boardId={boardId} refetch={refetch} />
+                  <SortableList
+                    key={list.id}
+                    list={list}
+                    boardId={boardId}
+                    boardMembers={board.members}
+                    boardOwner={board.owner}
+                    boardAdmins={board.admins}
+                    currentUser={meData?.me}
+                    refetch={refetch}
+                  />
                 ))}
             </SortableContext>
             <CreateListButton boardId={boardId} position={lists.length} refetch={refetch} />
@@ -268,6 +288,15 @@ export default function BoardPage() {
         <BoardStatistics
           statistics={board.statistics}
           onClose={() => setShowStatistics(false)}
+        />
+      )}
+
+      {showSettings && meData?.me && (
+        <BoardSettingsModal
+          board={board}
+          isOwner={!!isOwner}
+          onClose={() => setShowSettings(false)}
+          refetch={refetch}
         />
       )}
     </div>

@@ -3,15 +3,27 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { BoardList } from './BoardList';
-import { List as ListType } from '@/types';
+import { List as ListType, User } from '@/types';
 
 interface SortableListProps {
   list: ListType;
   boardId: string;
+  boardMembers: User[];
+  boardOwner: User;
+  boardAdmins: User[];
+  currentUser: User;
   refetch: () => void;
 }
 
-export function SortableList({ list, boardId, refetch }: SortableListProps) {
+export function SortableList({
+  list,
+  boardId,
+  boardMembers,
+  boardOwner,
+  boardAdmins,
+  currentUser,
+  refetch,
+}: SortableListProps) {
   const {
     attributes,
     listeners,
@@ -34,7 +46,16 @@ export function SortableList({ list, boardId, refetch }: SortableListProps) {
       {...attributes}
       className="sortable-list"
     >
-      <BoardList list={list} boardId={boardId} refetch={refetch} dragHandleListeners={listeners} />
+      <BoardList
+        list={list}
+        boardId={boardId}
+        boardMembers={boardMembers}
+        boardOwner={boardOwner}
+        boardAdmins={boardAdmins}
+        currentUser={currentUser}
+        refetch={refetch}
+        dragHandleListeners={listeners}
+      />
     </div>
   );
 }

@@ -144,8 +144,10 @@ export const boardResolvers = {
         throw createNotFoundError('Board');
       }
 
-      // Only admins can update board
-      checkBoardAdmin(board, context.userId!);
+      // Only owner can update board
+      if (board.owner.toString() !== context.userId) {
+        throw createAuthorizationError('Only board owner can update the board');
+      }
 
       Object.assign(board, input);
       await board.save();
@@ -172,9 +174,8 @@ export const boardResolvers = {
         throw createNotFoundError('Board');
       }
 
-      // Only owner can delete board
-      const isOwner = await checkBoardAccess(id, context.userId!, true);
-      if (!isOwner) {
+      // Only owner can delete board (not admins)
+      if (board.owner.toString() !== context.userId) {
         throw createAuthorizationError('Only board owner can delete the board');
       }
 

@@ -6,6 +6,7 @@ import {
 } from '../utils/errors';
 import { Context } from '../middleware/auth';
 import { pubsub, EVENTS } from '../utils/pubsub';
+import { checkBoardAdmin } from '../utils/permissions';
 
 export interface CreateCardInput {
   title: string;
@@ -120,12 +121,18 @@ export const cardResolvers = {
         cardPosition = maxPositionCard ? maxPositionCard.position + 1 : 0;
       }
 
-      const card = await Card.create({
+      // Convert priority from GraphQL enum (uppercase) to Mongoose enum (lowercase)
+      const cardData: any = {
         title,
         list: listId,
         position: cardPosition,
         ...rest,
-      });
+      };
+      if (cardData.priority) {
+        cardData.priority = cardData.priority.toLowerCase();
+      }
+
+      const card = await Card.create(cardData);
 
       await card.populate('list');
       await card.populate('assignees');
@@ -146,37 +153,49 @@ export const cardResolvers = {
     ) => {
       requireAuth(context);
 
-      const card = await Card.findById(id);
+      const card = await Card.findById(id).populate('assignees');
 
       if (!card) {
         throw createNotFoundError('Card');
       }
 
-      // Check board access
-      const list = await List.findById(card.list);
-      if (list) {
-        const hasAccess = await checkBoardAccess(
-          list.board.toString(),
-          context.userId!
-        );
-        if (!hasAccess) {
-          throw createAuthorizationError('You do not have access to this board');
-        }
+      // Get board through list
+      const list = await List.findById(card.list).populate('board');
+      if (!list) {
+        throw createNotFoundError('List');
       }
 
-      Object.assign(card, input);
+      const board = list.board as any;
+
+      // Only owner or admin can edit cards
+      const isOwner = board.owner.toString() === context.userId;
+      const isAdmin = board.admins.some(
+        (adminId: any) => adminId.toString() === context.userId
+      );
+
+      if (!isOwner && !isAdmin) {
+        throw createAuthorizationError(
+          'Only board owner or admins can edit cards'
+        );
+      }
+
+      // Convert priority from GraphQL enum (uppercase) to Mongoose enum (lowercase)
+      const updateData = { ...input };
+      if (updateData.priority) {
+        updateData.priority = updateData.priority.toLowerCase() as any;
+      }
+
+      Object.assign(card, updateData);
       await card.save();
 
       await card.populate('list');
       await card.populate('assignees');
 
       // Publish event
-      if (list) {
-        pubsub.publish(EVENTS.CARD_UPDATED, {
-          cardUpdated: card,
-          boardId: list.board.toString(),
-        });
-      }
+      pubsub.publish(EVENTS.CARD_UPDATED, {
+        cardUpdated: card,
+        boardId: board._id.toString(),
+      });
 
       return card;
     },
@@ -236,30 +255,29 @@ export const cardResolvers = {
         throw createNotFoundError('Card');
       }
 
-      // Check board access
-      const list = await List.findById(card.list);
-      if (list) {
-        const hasAccess = await checkBoardAccess(
-          list.board.toString(),
-          context.userId!
-        );
-        if (!hasAccess) {
-          throw createAuthorizationError('You do not have access to this board');
-        }
-
-        // Soft delete
-        card.isDeleted = true;
-        await card.save();
-
-        // Also soft delete all comments
-        await Comment.updateMany({ card: id }, { isDeleted: true });
-
-        // Publish event
-        pubsub.publish(EVENTS.CARD_DELETED, {
-          cardDeleted: id,
-          boardId: list.board.toString(),
-        });
+      // Get board through list
+      const list = await List.findById(card.list).populate('board');
+      if (!list) {
+        throw createNotFoundError('List');
       }
+
+      const board = list.board as any;
+
+      // Only owner or admin can delete cards
+      checkBoardAdmin(board, context.userId!);
+
+      // Soft delete
+      card.isDeleted = true;
+      await card.save();
+
+      // Also soft delete all comments
+      await Comment.updateMany({ card: id }, { isDeleted: true });
+
+      // Publish event
+      pubsub.publish(EVENTS.CARD_DELETED, {
+        cardDeleted: id,
+        boardId: board._id.toString(),
+      });
 
       return true;
     },
